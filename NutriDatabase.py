@@ -38,7 +38,9 @@ class NDB(object):
 		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Branded%20Food%20Products&api_key={}&type=b&offset=0&max=50'.format(item, self.api_key)
 		return self._request('get', url)
 
-
+	def ndbno_lookup(self, ndbno):
+		url = 'https://api.nal.usda.gov/ndb/V2/reports?ndbno={}&type=b&format=json&api_key={}'.format(ndbno, self.api_key)
+		return self._request('get', url)
 
 
 	# def get_noise_bulk(self, date=None, url='/v2/noise/bulk'):
