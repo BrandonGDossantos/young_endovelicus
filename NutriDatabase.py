@@ -30,9 +30,15 @@ class NDB(object):
 		resp.raise_for_status()
 		return json.loads(resp.text)
 
-	def standard_quick(self, item):
-		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Standard%20Reference&api_key=6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ&offset=0&max=50'.format(item)
+	def list_standard(self, item):
+		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Standard%20Reference&api_key={}&type=b&offset=0&max=50'.format(item, self.api_key)
 		return self._request('get', url)
+
+	def list_branded(self, item):
+		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Branded%20Food%20Products&api_key={}&type=b&offset=0&max=50'.format(item, self.api_key)
+		return self._request('get', url)
+
+
 
 
 	# def get_noise_bulk(self, date=None, url='/v2/noise/bulk'):
