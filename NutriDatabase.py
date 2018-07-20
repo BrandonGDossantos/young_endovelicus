@@ -4,7 +4,6 @@ import socket
 import ipaddress
 import json
 import re
-from netaddr import IPNetwork
 
 # class GreyNoiseInvalidDate(Exception):
 # 	pass
@@ -30,10 +29,14 @@ class NDB(object):
 		resp.raise_for_status()
 		return json.loads(resp.text)
 
-	def standard_quick(self, item):
-		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Standard%20Reference&api_key=6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ&offset=0&max=50'.format(item)
+	def list_standard(self, item):
+		item = item.replace(' ', '%20')
+		url = 'https://api.nal.usda.gov/ndb/search/?format=json&q={}&ds=Standard%20Reference&api_key={}&offset=0&max=50'.format(item, self.api_key)
 		return self._request('get', url)
 
+	def ndbno_lookup(self, ndbno):
+		url = 'https://api.nal.usda.gov/ndb/V2/reports?ndbno={}&type=f&format=json&api_key={}'.format(ndbno, self.api_key)
+		return self._request('get', url)
 
 	# def get_noise_bulk(self, date=None, url='/v2/noise/bulk'):
 	# 	url = self.base_url+url
