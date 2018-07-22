@@ -5,9 +5,6 @@ import ipaddress
 import json
 import re
 
-# class GreyNoiseInvalidDate(Exception):
-# 	pass
-
 class NDB(object):
 
 	def __init__(self, api_key, user_agent=None, base_url=None, session=None, headers=None, timeout=60, validate_ssl=True):
