@@ -3,6 +3,15 @@ import sys
 from itertools import permutations
 from NutriDatabase import NDB
 
+class Item(object):
+    """docstring for Item"""
+    def __init__(self, name, map_ingredients):
+        self.name = name
+        self.carb = map_ingredients['Carbohydrate, by difference']
+        self.calories = map_ingredients['Energy']
+        self.fat = map_ingredients['Total lipid (fat)']
+        self.protein = map_ingredients['Protein']
+        self.oz = 1
 
 """
     Query the database and list all standard references of an item
@@ -41,6 +50,7 @@ def calc_total(ingredient_map):
 
 
 def ingredient_populator(ndb_object):
+    item_objs = []
     ingredient_map = {}
     yes = {'yes', 'y', 'ye', ''}
     no = {'no', 'n'}
@@ -55,7 +65,11 @@ def ingredient_populator(ndb_object):
             x = False
         else:
             sys.stdout.write("Please respond with 'yes' or 'no'")
-    return ingredient_map
+    # iterate through dict(items) and output list of food objects
+    for key, value in ingredient_map.items():
+        item_obj = Item(key, value)
+        item_objs.append(item_obj)
+    return item_objs
 
 """
     Doubles ingredient macros
@@ -100,25 +114,36 @@ def converter(ndb_object, item):
         name = measurement['name']
         nutrient_map[name] = compute_convert(name, measurement['measures'][int(
             choice) - 1]['eqv'], measurement['measures'][int(choice) - 1]['value'])
-    nutrient_map['oz'] = 1
+    # nutrient_map['oz'] = 1
     return nutrient_map
 
+
 """
-    Permutate all combinations
+    Create permutation of multiples and objs
+"""
+
+
+def combine(item_objs):
+    perm_multiples = permutate(len(item_objs))
+    print(perm_multiples)
+
+"""
+    Permutate all number multiple combinations 
 """
 
 
 def permutate(num_items):
-    print(set(permutations(range(1, num_items+1))))
+    return list(permutations(range(1, num_items+1)))
 
 
 def main():
     api_key = "6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ"
     ndb_object = NDB(api_key)
-    ingredient_map = ingredient_populator(ndb_object)
-    print(json.dumps(ingredient_map, sort_keys=True, indent=4))
+    item_objs = ingredient_populator(ndb_object)
+    item_combos = combine(item_objs)
+    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
 
 
 if __name__ == "__main__":
-    # main()
-    permutate(2)
+    main()
+    # permutate(2)
