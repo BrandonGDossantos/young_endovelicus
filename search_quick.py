@@ -1,5 +1,7 @@
 import json
 import sys
+import itertools
+import pickle
 from NutriDatabase import NDB
 
 
@@ -17,17 +19,47 @@ def ndbno_lookup(ndb_object, ndbno):
     res = ndb_object.ndbno_lookup(ndbno)
     print(json.dumps(res, sort_keys=True, indent=4))
 
+# """
+#     Calculates the total ingredient oz 
+# """
+# def calc_total(ingredient_map):
+#     pass
+#     total = {}
+#     for key, value in ingredient_map.items():
+
+#        total = {k : v+total[k] for k, v in value.items() }
+#     return total
+
+def multiplier(ingredient_map):
+    # Produce a list of possible combinations
+    prod_oz = list(itertools.product([1,2,3], repeat=len(ingredient_map)))
+    # for combo in prod_oz:
+    #     for oz_val in combo:
+    #         for key, val in ingredient_map.items():
+    #             val['oz'] = oz_val
+
+    for key, val, tup in zip(ingredient_map.items(), prod_oz):
+        print(key, val, tup)
+
+    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
+
+    # print(ingredient_map)
+    # Set the ingredient item's oz to a new combo value
+
+    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
+
 """
-    Calculates the total ingredient oz 
+    Compute the total of nutrients given a dictionary of ingredients
 """
-def calc_total(ingredient_map):
-    pass
+def compute_total(ingredient_map):
     total = {}
     for key, value in ingredient_map.items():
-
-       total = {k : v+total[k] for k, v in value.items() }
+        for k, v in value.items():
+            if k not in total:
+                total[k] = round(v, 2)
+            else: 
+                total[k] += round(v, 2)
     return total
-
 """
     Loop through inputed ingredients and commense conversion to oz
 """
@@ -46,15 +78,19 @@ def ingredient_populator(ndb_object):
             x = False
         else:
             sys.stdout.write("Please respond with 'yes' or 'no'")
+
+    # Call compute_total() to populate the total key
+    # ingredient_map['total'] = compute_total(ingredient_map)
+    print(json.dumps(ingredient_map, sort_keys=True, indent=4))
     return ingredient_map 
 
-"""
-    Doubles ingredient macros
-"""
-def algorithm(ingredient_map):
-    for key, value in ingredient_map.items():
-        ingredient_map[key] = {k : v*2 for k, v in value.items() }
-    return ingredient_map
+# """
+#     Doubles ingredient macros
+# """
+# def algorithm(ingredient_map):
+#     for key, value in ingredient_map.items():
+#         ingredient_map[key] = {k : v*2 for k, v in value.items() }
+#     return ingredient_map
 
 """
     Normalizes
@@ -86,14 +122,17 @@ def converter(ndb_object, item):
     nutrient_map['oz'] = 1
     return nutrient_map
 
-def main():
-    api_key = "6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ" 
-    ndb_object = NDB(api_key)
-    ingredient_map = ingredient_populator(ndb_object)
-    print(json.dumps(ingredient_map, sort_keys=True, indent=4))
-
-
 
 if __name__ == "__main__":
-    main()
+    api_key = "6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ" 
+    ndb_object = NDB(api_key)
+    # ingredient_map = ingredient_populator(ndb_object)
+    # with open("test_recipe", "wb") as f:
+    #     f.write(pickle.dumps(ingredient_map))
+    #     f.close()
+    file = open("test_recipe", "rb")
+    ingredient_map = pickle.load(file)
+    file.close()
+    multiplier(ingredient_map)
+    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
 
