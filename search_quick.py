@@ -1,11 +1,9 @@
+import argparse
 import json
+import copy
 import sys
-<<<<<<< HEAD
 import itertools
 import pickle
-=======
-from itertools import permutations
->>>>>>> 011f8fdf1544950d8155bc8da3be8ca97f4beafb
 from NutriDatabase import NDB
 
 class Item(object):
@@ -36,39 +34,9 @@ def ndbno_lookup(ndb_object, ndbno):
     res = ndb_object.ndbno_lookup(ndbno)
     print(json.dumps(res, sort_keys=True, indent=4))
 
-# """
-#     Calculates the total ingredient oz 
-# """
-# def calc_total(ingredient_map):
-#     pass
-#     total = {}
-#     for key, value in ingredient_map.items():
-
-#        total = {k : v+total[k] for k, v in value.items() }
-#     return total
-
-def multiplier(ingredient_map):
-    # Produce a list of possible combinations
-    prod_oz = list(itertools.product([1,2,3], repeat=len(ingredient_map)))
-    # for combo in prod_oz:
-    #     for oz_val in combo:
-    #         for key, val in ingredient_map.items():
-    #             val['oz'] = oz_val
-
-    for key, val, tup in zip(ingredient_map.items(), prod_oz):
-        print(key, val, tup)
-
-    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
-
-    # print(ingredient_map)
-    # Set the ingredient item's oz to a new combo value
-
-    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
-
 """
     Compute the total of nutrients given a dictionary of ingredients
 """
-<<<<<<< HEAD
 def compute_total(ingredient_map):
     total = {}
     for key, value in ingredient_map.items():
@@ -77,17 +45,48 @@ def compute_total(ingredient_map):
                 total[k] = round(v, 2)
             else: 
                 total[k] += round(v, 2)
-=======
-
-
-def calc_total(ingredient_map):
-    pass
-    total = {}
-    for key, value in ingredient_map.items():
-
-        total = {k: v + total[k] for k, v in value.items()}
->>>>>>> 011f8fdf1544950d8155bc8da3be8ca97f4beafb
     return total
+
+"""
+    Compare the combo recipe with macros
+"""
+def compare(recipe_map, arg_dict):
+    points = 0
+    if 'Proteins' in arg_dict.keys():
+        points += abs(recipe_map['total']['Protein'] - arg_dict['Proteins'])
+    if 'Carbs' in arg_dict.keys():
+        points += abs(recipe_map['total']['Carbohydrate, by difference'] - arg_dict['Carbs'])
+    if 'Fats' in arg_dict.keys():
+        points += abs(recipe_map['total']['Total lipid (fat)'] - arg_dict['Fats'])
+    if 'Calories' in arg_dict.keys():
+        points += abs(recipe_map['total']['Energy'] - arg_dict['Calories'])
+    # print("Points: {}".format(points))
+    with open("tmp", "a") as file:
+        for key, val in recipe_map.items():
+            # print("{} : {}".format(key, recipe_map[key]['oz']))
+            file.write("Points: {}\n".format(points))
+            file.write("{} : {}\n".format(key, recipe_map[key]['oz']))
+
+
+"""
+    Multiply each nurtient by combo
+"""
+def multiplier(ingredient_map, arg_dict):
+    # Produce a list of possible combinations
+    prod_oz = list(itertools.product([1,2,3,4,5,6,7,8,9,10], repeat=len(ingredient_map)))
+    # Assign combo 'oz' values to each ingredient 
+    for combo in prod_oz:
+        template = copy.deepcopy(ingredient_map)
+        i = 0
+        for key, val in template.items():
+               for vkey in val:
+                    val[vkey] *= combo[i]   
+               i += 1
+        template['total'] = compute_total(template)
+        compare(template, arg_dict)
+
+        # print(json.dumps(template, sort_keys=True, indent=4))
+
 """
     Loop through inputed ingredients and commense conversion to oz
 """
@@ -109,37 +108,11 @@ def ingredient_populator(ndb_object):
             x = False
         else:
             sys.stdout.write("Please respond with 'yes' or 'no'")
-<<<<<<< HEAD
-
     # Call compute_total() to populate the total key
     # ingredient_map['total'] = compute_total(ingredient_map)
-    print(json.dumps(ingredient_map, sort_keys=True, indent=4))
+    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
     return ingredient_map 
 
-# """
-#     Doubles ingredient macros
-# """
-# def algorithm(ingredient_map):
-#     for key, value in ingredient_map.items():
-#         ingredient_map[key] = {k : v*2 for k, v in value.items() }
-#     return ingredient_map
-=======
-    # iterate through dict(items) and output list of food objects
-    for key, value in ingredient_map.items():
-        item_obj = Item(key, value)
-        item_objs.append(item_obj)
-    return item_objs
-
-"""
-    Doubles ingredient macros
-"""
-
-
-def algorithm(ingredient_map):
-    for key, value in ingredient_map.items():
-        ingredient_map[key] = {k: v * 2 for k, v in value.items()}
-    return ingredient_map
->>>>>>> 011f8fdf1544950d8155bc8da3be8ca97f4beafb
 
 """
     Normalizes
@@ -174,53 +147,30 @@ def converter(ndb_object, item):
         name = measurement['name']
         nutrient_map[name] = compute_convert(name, measurement['measures'][int(
             choice) - 1]['eqv'], measurement['measures'][int(choice) - 1]['value'])
-    # nutrient_map['oz'] = 1
+    nutrient_map['oz'] = 1
+
     return nutrient_map
 
-<<<<<<< HEAD
 
 if __name__ == "__main__":
     api_key = "6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ" 
+    arg_dict = {}
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-Proteins", type=float, help="Proteins")
+    parser.add_argument("-Carbs", type=float, help="Carbohydrates")
+    parser.add_argument("-Fats", type=float, help="Fats")
+    parser.add_argument("-Calories", type=float, help="Calories")
+    args = parser.parse_args()
+    for arg in vars(args):
+        arg_dict[arg] = getattr(args, arg)
     ndb_object = NDB(api_key)
-    # ingredient_map = ingredient_populator(ndb_object)
-    # with open("test_recipe", "wb") as f:
-    #     f.write(pickle.dumps(ingredient_map))
-    #     f.close()
-    file = open("test_recipe", "rb")
-    ingredient_map = pickle.load(file)
-    file.close()
-    multiplier(ingredient_map)
-    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
-
-=======
-
-"""
-    Create permutation of multiples and objs
-"""
-
-
-def combine(item_objs):
-    perm_multiples = permutate(len(item_objs))
-    print(perm_multiples)
-
-"""
-    Permutate all number multiple combinations 
-"""
-
-
-def permutate(num_items):
-    return list(permutations(range(1, num_items+1)))
-
-
-def main():
-    api_key = "6I7oF4v5gemv0hZvOZH7pzFGRQzwLKGS5A4y3vWQ"
-    ndb_object = NDB(api_key)
-    item_objs = ingredient_populator(ndb_object)
-    item_combos = combine(item_objs)
-    # print(json.dumps(ingredient_map, sort_keys=True, indent=4))
-
-
-if __name__ == "__main__":
-    main()
-    # permutate(2)
->>>>>>> 011f8fdf1544950d8155bc8da3be8ca97f4beafb
+    ingredient_map = ingredient_populator(ndb_object)
+    
+   # with open("test_recipe", "wb") as f:
+   #     f.write(pickle.dumps(ingredient_map))
+   #     f.close()
+   ## file = open("test_recipe", "rb")
+   # ingredient_map = pickle.load(file)
+   # file.close()
+    multiplier(ingredient_map, arg_dict)
+    #print(json.dumps(ingredient_map, sort_keys=True, indent=4))
